@@ -1,4 +1,40 @@
-const AdminPanel = () => {
+import { useState } from "react";
+import { Link } from "react-router-dom";
+
+const InventoryManagement = () => {
+  const [products, setProducts] = useState([
+    {
+      id: 1,
+      name: "Product A",
+      price: 23,
+      discountPrice: 21,
+      description: "Fresh greens",
+    },
+    {
+      id: 2,
+      name: "Product B",
+      price: 30,
+      discountPrice: 27,
+      description: "Organic apples",
+    },
+    {
+      id: 3,
+      name: "Product C",
+      price: 15,
+      discountPrice: 12,
+      description: "Dairy milk",
+    },
+    {
+      id: 4,
+      name: "Product D",
+      price: 40,
+      discountPrice: 35,
+      description: "Brown rice",
+    },
+  ]);
+  const handleDelete = (id) => {
+    setProducts(products.filter((product) => product.id !== id));
+  };
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
@@ -10,16 +46,16 @@ const AdminPanel = () => {
           ></img>
           <ul className="space-y-2">
             <li className="hover:bg-gray-200 p-2 rounded-lg cursor-pointer">
-              User Management
+              <Link to={"/User"}> User Management</Link>
             </li>
             <li className="hover:bg-gray-200 p-2 rounded-lg cursor-pointer">
-              Inventory Management
+              <Link to={"/Inventory"}> Inventory Management </Link>
             </li>
             <li className="hover:bg-gray-200 p-2 rounded-lg cursor-pointer">
-              Delivery Management
+              <Link to={"/Delivery"}> Delivery Management</Link>
             </li>
             <li className="hover:bg-gray-200 p-2 rounded-lg cursor-pointer">
-              Community Management
+              <Link to={"/Community"}> Community Management</Link>
             </li>
           </ul>
         </aside>
@@ -27,7 +63,7 @@ const AdminPanel = () => {
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-xl font-bold">Inventory Management</h1>
             <button className="m-2 p-2 bg-black text-white hover:bg-blue-600">
-              Add Product
+              <Link to={"/editpanel"}> Add Product</Link>
             </button>
           </div>
           <div className="overflow-auto">
@@ -43,19 +79,32 @@ const AdminPanel = () => {
                 </tr>
               </thead>
               <tbody>
-                {Array.from({ length: 8 }).map((_, index) => (
-                  <tr key={index} className="even:bg-gray-50">
-                    <td className="p-2 border border-gray-200">Product A</td>
-                    <td className="p-2 border border-gray-200">23</td>
-                    <td className="p-2 border border-gray-200">21</td>
+                {products.map((product) => (
+                  <tr key={product.id} className="even:bg-gray-50">
+                    <td className="p-2 border border-gray-200">
+                      {product.name}
+                    </td>
+                    <td className="p-2 border border-gray-200">
+                      {product.price}
+                    </td>
+                    <td className="p-2 border border-gray-200">
+                      {product.discountPrice}
+                    </td>
                     <td className="p-2 border border-gray-200">
                       <div className="w-8 h-8 bg-gray-200"></div>
                     </td>
-                    <td className="p-2 border border-gray-200">fresh greens</td>
+                    <td className="p-2 border border-gray-200">
+                      {product.description}
+                    </td>
                     <td className="p-2 border border-gray-200">
                       <div className="flex space-x-2">
                         <button className="text-blue-500">Edit</button>
-                        <button className="text-red-500">Delete</button>
+                        <button
+                          className="text-red-500"
+                          onClick={() => handleDelete(product.id)}
+                        >
+                          Delete
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -69,4 +118,4 @@ const AdminPanel = () => {
   );
 };
 
-export default AdminPanel;
+export default InventoryManagement;

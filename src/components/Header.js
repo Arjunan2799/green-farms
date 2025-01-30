@@ -23,12 +23,12 @@ const Header = () => {
       <div className="flex items-end">
         <ul className="flex p-4 m-4">
           <li>
-            <Link to="/aboutus">
-              <i class="fa-solid fa-cart-shopping"></i>
+            <Link to="/cartpage">
+              <i className="fa-solid fa-cart-shopping"></i>
             </Link>
           </li>
           <li className="px-4 font-bold text-xl">
-            <Link to="/cart">
+            <Link to="/profilepage">
               <i className="fas fa-user"></i>
             </Link>
           </li>
