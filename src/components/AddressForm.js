@@ -7,6 +7,7 @@ const AddAddressForm = () => {
     community: "",
     block: "",
     flat: "",
+    pincode: "",
   });
   const navigate = useNavigate();
 
@@ -18,32 +19,60 @@ const AddAddressForm = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (
       !addressDetails.name ||
       !addressDetails.community ||
       !addressDetails.block ||
-      !addressDetails.flat
+      !addressDetails.flat ||
+      !addressDetails.pincode
     ) {
       alert("Please fill in all fields");
       return;
     }
 
-    const mobileNumber = localStorage.getItem("loggedInUser");
-    const users = JSON.parse(localStorage.getItem("users")) || {};
+    const token = localStorage.getItem("authToken");
+    console.log("addrestoken", token);
 
-    if (users[mobileNumber]) {
-      users[mobileNumber] = {
-        ...users[mobileNumber],
-        ...addressDetails,
-      };
-      localStorage.setItem("users", JSON.stringify(users));
+    if (!token) {
+      alert("User not logged in.");
+      return;
     }
 
-    alert("Address saved successfully!");
-    navigate("/welcomepage");
+    try {
+      const response = await fetch(
+        "http://localhost:8000/api/user/create-address",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+          body: JSON.stringify({
+            name: addressDetails.name,
+            community_id: addressDetails.community,
+            block: addressDetails.block,
+            flat_door: addressDetails.flat,
+            pincode: addressDetails.pincode,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      console.log("Address API Response:", data);
+
+      if (response.ok) {
+        alert("Address saved successfully!");
+        navigate("/welcomepage");
+      } else {
+        alert(data.message || "Failed to save address.");
+      }
+    } catch (error) {
+      console.error("Error saving address:", error);
+      alert("An error occurred while saving the address.");
+    }
   };
 
   return (
@@ -84,9 +113,9 @@ const AddAddressForm = () => {
               className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             >
               <option value="">Select your community</option>
-              <option value="community1">Community 1</option>
-              <option value="community2">Community 2</option>
-              <option value="community3">Community 3</option>
+              <option value="67a358a97f491b6f9c02a2c3">Community 1</option>
+              <option value="67a728175e4517675c47a446">Community 2</option>
+              <option value="67a76b755e4517675c47a569">Community 3</option>
             </select>
           </div>
           <div>
@@ -122,6 +151,22 @@ const AddAddressForm = () => {
               className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             />
           </div>
+          <div>
+            <label
+              htmlFor="pincode"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Pincode
+            </label>
+            <input
+              type="text"
+              id="pincode"
+              placeholder="Enter your pincode number"
+              value={addressDetails.pincode}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+          </div>
 
           <div className="flex justify-between items-center mt-6">
             <button
@@ -132,7 +177,8 @@ const AddAddressForm = () => {
               Cancel
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               className="px-6 py-2 text-white bg-green-500 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               Save

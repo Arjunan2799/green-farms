@@ -10,11 +10,43 @@ const Header = () => {
     setIsLoggedIn(!!loggedInUser);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("loggedInUser");
-    setIsLoggedIn(false);
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("authToken"); // Retrieve token from localStorage
+      console.log("Auth Token:", token);
+
+      if (!token) {
+        alert("User is not logged in.");
+        return;
+      }
+
+      const response = await fetch("http://localhost:8000/api/user/logout", {
+        method: "GET",
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      const data = await response.json();
+      console.log("Logout Response:", data);
+
+      if (response.ok) {
+        // ✅ Logout successful: Clear user session
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("loggedInUser");
+        setIsLoggedIn(false);
+
+        alert("Logout successful!");
+        navigate("/");
+      } else {
+        alert(data?.message || "Logout failed.");
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+      alert("An error occurred while logging out.");
+    }
   };
+
   return (
     <div className="flex justify-between bg-orange-100 shadow-lg m-2 ">
       <div className=" w-35 p-2 m-2">

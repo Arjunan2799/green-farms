@@ -14,17 +14,19 @@ import DeliveryManagement from "./components/DeliveryManagement";
 import AddUser from "./components/AddUser";
 import AddCommunity from "./components/AddCommunity";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import CartItems from "./components/CartItems";
 
 function App() {
   return (
     <div className="App">
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/Login" element={<Login />} />
         <Route path="/addressform" element={<AddAddressForm />} />
         <Route path="/welcomepage" element={<WelcomePage />} />
         <Route path="/profilepage" element={<ProfilePage />} />
         <Route path="/homepage" element={<HomePage />} />
         <Route path="/cartpage" element={<CartPage />} />
+        <Route path="/product/:id" element={<CartItems />} />
         <Route path="/checkoutpage" element={<CheckoutPage />} />
         <Route path="/Inventory" element={<InventoryManagement />} />
         <Route path="/User" element={<UserManagement />} />

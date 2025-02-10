@@ -4,26 +4,55 @@ import { useNavigate } from "react-router-dom";
 const Login = () => {
   const [mobileNumber, setMobileNumber] = useState("");
   const navigate = useNavigate();
+  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!mobileNumber) {
       alert("Please enter your mobile number");
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem("users")) || {};
+    try {
+      const response = await fetch("http://localhost:8000/api/user/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ mobile_no: mobileNumber }),
+      });
 
-    if (users[mobileNumber]) {
-      alert(`Welcome back, User!`);
-      localStorage.setItem("loggedInUser", mobileNumber);
-      navigate("/welcomepage");
-    } else {
-      users[mobileNumber] = { mobileNumber };
-      localStorage.setItem("users", JSON.stringify(users));
-      localStorage.setItem("loggedInUser", mobileNumber);
-      navigate("/addressform");
+      const data = await response.json();
+      console.log("login data", data);
+
+      if (response.ok) {
+        const token1 = data?.data?.attributes?.token;
+        const newUser = data?.data?.attributes?.message;
+
+        console.log("token", token1);
+        if (!token1) {
+          alert("Login failed: Token not received.");
+          return;
+        }
+
+        localStorage.setItem("authToken", token1);
+        localStorage.setItem("loggedInUser", mobileNumber);
+        if (newUser === "new") {
+          alert("Welcome new User");
+          navigate("/addressform");
+          return;
+        }
+
+        alert("Login Successful!");
+        navigate("/welcomepage");
+      } else {
+        alert(data.message || "Login failed");
+      }
+    } catch (error) {
+      console.error("Error logging in:", error);
+      alert("An error occurred while logging in.");
     }
   };
+
   return (
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <div className="bg-[#f9f8f3] w-[320px] rounded-lg shadow-lg p-6">
