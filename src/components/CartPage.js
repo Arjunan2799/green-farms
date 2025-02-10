@@ -18,10 +18,17 @@ const CartPage = () => {
 
       const data = await response.json();
       console.log("aaaaaaaaaaccccc", data);
-      const responseData = data?.data?.attributes?.data;
+      const responseData = data?.data?.attributes?.data || [];
       console.log("responsedataaaaa", responseData);
+      const formattedCartItems = responseData.map((item) => ({
+        id: item._id,
+        name: item.product_id?.product_name || "Unknown Item",
+        price: item.product_id?.price || 0,
+        qty: item.qty || 1,
+        totalPrice: (item.product_id?.price || 0) * (item.qty || 1),
+      }));
       if (response.ok) {
-        setCartItems(responseData || []);
+        setCartItems(formattedCartItems);
       } else {
         console.error("Failed to fetch cart items:", data.message);
       }
@@ -61,15 +68,15 @@ const CartPage = () => {
                   className="h-16 w-16 rounded-lg object-cover"
                 />
                 <div>
-                  <p className="font-semibold">{item.name || "Unknown Item"}</p>
-                  <p className="text-gray-500">₹{item.price || "0.00"}</p>
+                  <p className="font-semibold">{item.name}</p>
+                  <p className="text-gray-500">₹{item.price.toFixed(2)}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
                 <button className="bg-green-100 text-green-600 px-3 py-1 rounded-lg">
                   -
                 </button>
-                <span>{item.qty || 1}</span>
+                <span>{item.qty}</span>
                 <button className="bg-green-100 text-green-600 px-3 py-1 rounded-lg">
                   +
                 </button>
@@ -86,10 +93,9 @@ const CartPage = () => {
           <span>Subtotal</span>
           <span>
             ₹
-            {cartItems.reduce(
-              (total, item) => total + (item.price || 0) * (item.qty || 1),
-              0
-            )}
+            {cartItems
+              .reduce((total, item) => total + item.totalPrice, 0)
+              .toFixed(2)}
           </span>
         </div>
         <button className="bg-green-500 text-white w-full py-2 rounded-lg mb-2">
