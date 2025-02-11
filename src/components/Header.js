@@ -37,7 +37,7 @@ const Header = () => {
         setIsLoggedIn(false);
 
         alert("Logout successful!");
-        navigate("/");
+        navigate("/login");
       } else {
         alert(data?.message || "Logout failed.");
       }

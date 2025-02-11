@@ -1,4 +1,43 @@
+import { useState, useEffect } from "react";
+
 const ProfilePage = () => {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem("authToken");
+  const userId = "67a4f3ac3a0b37618c41ab3f"; // Replace this dynamically if needed
+
+  async function fetchProfile() {
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/user/profile/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+
+      const data = await response.json();
+      const responseData = data?.data?.attributes?.data;
+      console.log("profile", responseData);
+
+      if (response.ok) {
+        setProfile(responseData);
+      } else {
+        console.error("Failed to fetch profile:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <header className="flex items-center justify-between mb-6">
@@ -9,66 +48,53 @@ const ProfilePage = () => {
         <div></div>
       </header>
 
-      <div className="bg-white p-4 rounded-lg shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-4">
-            <img
-              src="/assets/profile01.png"
-              alt="Avatar"
-              className="h-16 w-16 rounded-full"
-            />
-            <div>
-              <h2 className="text-lg font-bold">DJ</h2>
-              <p className="text-gray-500">+91-9123456780</p>
-            </div>
-          </div>
-          <button className="text-blue-500">Edit</button>
-        </div>
-
-        <div className="mb-4">
-          <h3 className="font-semibold">Address</h3>
-          <p className="text-gray-500">
-            Tower B-1802, Smondo 2 Apartment, Neotown, Chennai, 600100
-          </p>
-          <button className="text-blue-500 mt-1">Change</button>
-        </div>
-
-        <div className="mb-4">
-          <h3 className="font-semibold">Wallet Balance</h3>
-          <p className="text-lg font-bold">₹1012</p>
-          <button className="bg-green-500 text-white px-4 py-2 mt-2 rounded-lg">
-            Add Money
-          </button>
-        </div>
-      </div>
-
-      <div className="mt-6">
-        <h3 className="font-bold text-lg mb-4">Your Orders</h3>
-        {[1, 2].map((order, index) => (
-          <div
-            key={index}
-            className="bg-white p-4 rounded-lg shadow-sm mb-4 flex justify-between items-center"
-          >
+      {loading ? (
+        <p>Loading profile...</p>
+      ) : profile ? (
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          {/* User Details */}
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
               <img
-                src="/assets/spanish.png"
-                alt="Arai Keerai"
-                className="h-16 w-16 rounded-lg object-cover"
+                src="/assets/profile01.png"
+                alt="Avatar"
+                className="h-16 w-16 rounded-full"
               />
               <div>
-                <p className="font-semibold">Arai Keerai, Spinach</p>
+                <h2 className="text-lg font-bold">
+                  {profile.user_details?.name || "User"}
+                </h2>
                 <p className="text-gray-500">
-                  Order Placed on: 12 Nov 2024, 06:10 AM
+                  {profile.user_details?.mobile_no || "N/A"}
                 </p>
-                <p className="text-gray-500">Total: ₹36.00</p>
               </div>
             </div>
-            <span className="bg-green-100 text-green-700 px-4 py-1 rounded-lg">
-              Delivered
-            </span>
+            <button className="text-blue-500">Edit</button>
           </div>
-        ))}
-      </div>
+
+          {/* Address */}
+          <div className="mb-4">
+            <h3 className="font-semibold">Address</h3>
+            <p className="text-gray-500">
+              {profile.address_details?.address || "No Address Available"}
+            </p>
+            <button className="text-blue-500 mt-1">Change</button>
+          </div>
+
+          {/* Wallet Balance */}
+          <div className="mb-4">
+            <h3 className="font-semibold">Wallet Balance</h3>
+            <p className="text-lg font-bold">
+              ₹{profile.user_details?.wallet_balance || "0.00"}
+            </p>
+            <button className="bg-green-500 text-white px-4 py-2 mt-2 rounded-lg">
+              Add Money
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p className="text-center text-gray-500">Profile not found.</p>
+      )}
     </div>
   );
 };

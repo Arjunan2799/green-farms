@@ -5,8 +5,12 @@ import { useEffect, useState } from "react";
 const CartItems = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  console.log(cartItems);
   const token = localStorage.getItem("authToken");
+
+  const calculateDiscountedPrice = (price, discount) => {
+    return price - (price * discount) / 100;
+  };
+
   async function fetchCart() {
     try {
       const response = await fetch(
@@ -78,32 +82,43 @@ const CartItems = () => {
   return (
     <div className="flex flex-wrap justify-center">
       {loading ? (
-        cartItems.map((item) => (
-          <div
-            key={item.id}
-            className="p-2 m-2 border-gray-200 border-b-2 text-left w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5"
-          >
-            <div className="w-full flex flex-col items-center p-4 bg-white rounded-lg shadow-md">
-              <img
-                src={"/assets/grass.png"}
-                className="w-full h-auto rounded-lg"
-                alt={item.name}
-              />
-              <div className="text-center mt-2">
-                <span className="font-semibold">{item.name}</span>
-                <span className="block text-gray-700">₹ {item.price}</span>
+        cartItems.map((item) => {
+          const finalPrice = calculateDiscountedPrice(
+            item.price,
+            item.discountPrice
+          );
+          return (
+            <div
+              key={item.id}
+              className="p-2 m-2 border-gray-200 border-b-2 text-left w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5"
+            >
+              <div className="w-full flex flex-col items-center p-4 bg-white rounded-lg shadow-md">
+                <img
+                  src={"/assets/grass.png"}
+                  className="w-full h-auto rounded-lg"
+                  alt={item.name}
+                />
+                <div className="text-center mt-2">
+                  <span className="font-semibold">{item.name}</span>
+                  <span className="block text-gray-700">
+                    Price: ₹{item.price} | Discount: {item.discountPrice}%
+                  </span>
+                  <span className="block font-bold text-green-600">
+                    Final Price: ₹{finalPrice.toFixed(2)}
+                  </span>
+                </div>
+                <button
+                  className="mt-4 px-4 py-2 rounded-lg bg-green-700 text-white shadow-lg w-full"
+                  onClick={() => handleAddToCart(item.id)}
+                >
+                  Add
+                </button>
               </div>
-              <button
-                className="mt-4 px-4 py-2 rounded-lg  bg-green-700 text-white shadow-lg w-full"
-                onClick={() => handleAddToCart(item.id)}
-              >
-                Add
-              </button>
             </div>
-          </div>
-        ))
+          );
+        })
       ) : (
-        <p>no cart to show</p>
+        <p>No items in cart</p>
       )}
     </div>
   );

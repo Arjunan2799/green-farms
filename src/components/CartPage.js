@@ -26,6 +26,7 @@ const CartPage = () => {
         price: item.product_id?.price || 0,
         qty: item.qty || 1,
         totalPrice: (item.product_id?.price || 0) * (item.qty || 1),
+        user_id: item.user_id,
       }));
       if (response.ok) {
         setCartItems(formattedCartItems);
@@ -42,6 +43,41 @@ const CartPage = () => {
   useEffect(() => {
     fetchCartItems();
   }, []);
+
+  async function handleIncreaseQuantity(productId) {
+    try {
+      const response = await fetch("http://localhost:8000/api/user/add-cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({
+          product_id: productId,
+          qty: 1,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setCartItems((prevItems) =>
+          prevItems.map((item) =>
+            item.id === item.user_id
+              ? {
+                  ...item,
+                  qty: item.qty + 1,
+                  totalPrice: (item.qty + 1) * item.price,
+                }
+              : item
+          )
+        );
+      } else {
+        console.error("Failed to add item to cart:", data.message);
+      }
+    } catch (error) {
+      console.error("Error adding item to cart:", error);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -77,7 +113,10 @@ const CartPage = () => {
                   -
                 </button>
                 <span>{item.qty}</span>
-                <button className="bg-green-100 text-green-600 px-3 py-1 rounded-lg">
+                <button
+                  className="bg-green-100 text-green-600 px-3 py-1 rounded-lg"
+                  onClick={() => handleIncreaseQuantity(item.id)}
+                >
                   +
                 </button>
               </div>
