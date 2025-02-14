@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
+  const notify = () => toast("Logout successfully");
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem("loggedInUser");
@@ -36,7 +38,7 @@ const Header = () => {
         localStorage.removeItem("loggedInUser");
         setIsLoggedIn(false);
 
-        alert("Logout successful!");
+        notify();
         navigate("/login");
       } else {
         alert(data?.message || "Logout failed.");
@@ -48,33 +50,33 @@ const Header = () => {
   };
 
   return (
-    <div className="flex justify-between bg-orange-100 shadow-lg m-2 ">
-      <div className=" w-35 p-2 m-2">
-        <img src="/assets/logo.png" alt="Logo" />
+    <div className="flex justify-between bg-orange-100 shadow-lg m-1 p-1">
+      <div className=" w-24 p-1 m-1">
+        <img src="/assets/logo.png" alt="Logo" className="h-10" />
       </div>
       <div className="flex items-end">
-        <ul className="flex p-4 m-4">
-          <li>
+        <ul className="flex p-2 m-2">
+          <li className="px-2 font-bold text-xl">
             <Link to="/cartpage">
               <i className="fa-solid fa-cart-shopping"></i>
             </Link>
           </li>
-          <li className="px-4 font-bold text-xl">
+          <li className="px-3 font-bold text-xl">
             <Link to="/profilepage">
               <i className="fas fa-user"></i>
             </Link>
           </li>
           {isLoggedIn ? (
             <button
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700"
               onClick={handleLogout}
             >
               Logout
             </button>
           ) : (
             <Link
-              to="/"
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              to="/login"
+              className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700"
             >
               Login
             </Link>

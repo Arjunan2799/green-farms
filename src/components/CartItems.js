@@ -1,11 +1,14 @@
 import React from "react";
 
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 const CartItems = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [count, setCount] = useState([]);
   const token = localStorage.getItem("authToken");
+  const notify = () => toast("Items have been added");
 
   const calculateDiscountedPrice = (price, discount) => {
     return price - (price * discount) / 100;
@@ -51,7 +54,16 @@ const CartItems = () => {
     setCartItems(formattedProducts);
   }
 
+  function addCounter(productId) {
+    setCount((prevCount) => ({
+      ...prevCount,
+      [productId]: (prevCount[productId] || 0) + 1,
+    }));
+    notify();
+  }
+
   async function handleAddToCart(productId) {
+    console.log("Adding product to cart:", productId);
     try {
       const response = await fetch("http://localhost:8000/api/user/add-cart", {
         method: "POST",
@@ -68,7 +80,7 @@ const CartItems = () => {
       const data = await response.json();
       console.log("cart added", data);
       if (response.ok) {
-        alert("Product added to cart successfully!");
+        addCounter(productId);
         fetchCart();
       } else {
         alert(data.message || "Failed to add product to cart.");
@@ -90,7 +102,7 @@ const CartItems = () => {
           return (
             <div
               key={item.id}
-              className="p-2 m-2 border-gray-200 border-b-2 text-left w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5"
+              className="p-2 m-2 border-gray-200 border-b-2 text-left w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/4"
             >
               <div className="w-full flex flex-col items-center p-4 bg-white rounded-lg shadow-md">
                 <img
@@ -107,12 +119,17 @@ const CartItems = () => {
                     Final Price: ₹{finalPrice.toFixed(2)}
                   </span>
                 </div>
-                <button
-                  className="mt-4 px-4 py-2 rounded-lg bg-green-700 text-white shadow-lg w-full"
-                  onClick={() => handleAddToCart(item.id)}
-                >
-                  Add
-                </button>
+                <div className=" flex justify-between w-full">
+                  <button
+                    className="mt-4 px-4 py-2 rounded-lg bg-green-700 text-white shadow-lg"
+                    onClick={() => handleAddToCart(item.id)}
+                  >
+                    Add
+                  </button>
+                  <span className="font-semibold text-lg">
+                    {count[item.id] || 0}
+                  </span>
+                </div>
               </div>
             </div>
           );

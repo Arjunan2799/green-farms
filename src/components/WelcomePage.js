@@ -15,15 +15,6 @@ const WelcomePage = () => {
           <div className="bg-orange-400 w-14 p-2 m-2 rounded-lg">
             <h4>Greens</h4>
           </div>
-          <div className="bg-orange-400 w-14 p-2 m-2 rounded-lg">
-            <h4>Greens</h4>
-          </div>
-          <div className="bg-orange-400 w-14 p-2 m-2 rounded-lg">
-            <h4>Greens</h4>
-          </div>
-          <div className="bg-orange-400 w-14 p-2 m-2 rounded-lg">
-            <h4>Greens</h4>
-          </div>
         </div>
 
         <CartItems />

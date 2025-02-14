@@ -178,7 +178,7 @@ const CommunityManagement = () => {
                   className="border p-2 w-full"
                 />
                 <input
-                  type="number"
+                  type="text"
                   placeholder="Occurrence"
                   name="community_occurence"
                   value={newCommunity.community_occurence}

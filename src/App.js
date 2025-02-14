@@ -15,6 +15,7 @@ import AddUser from "./components/AddUser";
 import AddCommunity from "./components/AddCommunity";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import CartItems from "./components/CartItems";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
         <Route path="/adduser" element={<AddUser />} />
         <Route path="/addcommunity" element={<AddCommunity />} />
       </Routes>
+      <ToastContainer />
     </div>
   );
 }

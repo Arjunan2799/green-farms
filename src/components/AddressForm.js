@@ -1,22 +1,61 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 const AddAddressForm = () => {
   const [addressDetails, setAddressDetails] = useState({
     name: "",
-    community: "",
+    community_id: "",
     block: "",
     flat: "",
     pincode: "",
   });
+  const [communities, setCommunities] = useState([]); // Store community list
   const navigate = useNavigate();
+  console.log("getstatteee", communities);
+  async function fetchCommunity() {
+    try {
+      const response = await fetch(
+        "http://localhost:8000/api/admin/all-community"
+      );
+      const data = await response.json();
+      const responseData = data?.data?.attributes?.data;
+      console.log("getadress", responseData);
+
+      if (response.ok) {
+        if (responseData.length > 0) {
+          setCommunities(responseData); // Store communities for dropdown
+        } else {
+          setCommunities([]);
+        }
+      } else {
+        console.error("Failed to fetch communities:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching communities:", error);
+    }
+  }
+
+  useEffect(() => {
+    fetchCommunity();
+  }, []);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setAddressDetails((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
+    console.log(`Updating field: ${id}, Value: ${value}`);
+
+    if (id === "community") {
+      const selectedCommunity = communities.find(
+        (c) => c.community_no === value
+      );
+      setAddressDetails((prev) => ({
+        ...prev,
+        community_id: selectedCommunity ? selectedCommunity._id : "",
+      }));
+    } else {
+      setAddressDetails((prev) => ({
+        ...prev,
+        [id]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -24,7 +63,7 @@ const AddAddressForm = () => {
 
     if (
       !addressDetails.name ||
-      !addressDetails.community ||
+      !addressDetails.community_id ||
       !addressDetails.block ||
       !addressDetails.flat ||
       !addressDetails.pincode
@@ -34,8 +73,6 @@ const AddAddressForm = () => {
     }
 
     const token = localStorage.getItem("authToken");
-    console.log("addrestoken", token);
-
     if (!token) {
       alert("User not logged in.");
       return;
@@ -52,7 +89,7 @@ const AddAddressForm = () => {
           },
           body: JSON.stringify({
             name: addressDetails.name,
-            community_id: addressDetails.community,
+            community_id: communities._id,
             block: addressDetails.block,
             flat_door: addressDetails.flat,
             pincode: addressDetails.pincode,
@@ -61,7 +98,7 @@ const AddAddressForm = () => {
       );
 
       const data = await response.json();
-      console.log("Address API Response:", data);
+      console.log("address added", data);
 
       if (response.ok) {
         alert("Address saved successfully!");
@@ -74,6 +111,7 @@ const AddAddressForm = () => {
       alert("An error occurred while saving the address.");
     }
   };
+  console.log("Submitting Address Details:", addressDetails);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -99,6 +137,7 @@ const AddAddressForm = () => {
               className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             />
           </div>
+
           <div>
             <label
               htmlFor="community"
@@ -108,16 +147,19 @@ const AddAddressForm = () => {
             </label>
             <select
               id="community"
-              value={addressDetails.community}
+              value={addressDetails.community_id}
               onChange={handleChange}
               className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             >
               <option value="">Select your community</option>
-              <option value="67a358a97f491b6f9c02a2c3">Community 1</option>
-              <option value="67a728175e4517675c47a446">Community 2</option>
-              <option value="67a76b755e4517675c47a569">Community 3</option>
+              {communities.map((community) => (
+                <option key={community._id} value={community.community_no}>
+                  {community.community_name}
+                </option>
+              ))}
             </select>
           </div>
+
           <div>
             <label
               htmlFor="block"
@@ -151,6 +193,7 @@ const AddAddressForm = () => {
               className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
             />
           </div>
+
           <div>
             <label
               htmlFor="pincode"
@@ -171,14 +214,13 @@ const AddAddressForm = () => {
           <div className="flex justify-between items-center mt-6">
             <button
               type="button"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/login")}
               className="px-6 py-2 text-green-500 border border-green-500 rounded-lg hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               Cancel
             </button>
             <button
-              type="button"
-              onClick={handleSubmit}
+              type="submit"
               className="px-6 py-2 text-white bg-green-500 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               Save

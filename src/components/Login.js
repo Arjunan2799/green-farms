@@ -1,10 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
 
 const Login = () => {
   const [mobileNumber, setMobileNumber] = useState("");
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
+  const notify = () => toast("Welcome User");
+
+  function validatePhoneNumber(e) {
+    const num = e.target.value;
+    if (num.length > 10) {
+      alert("mobile number should not be greater than 10 digits");
+      return;
+    }
+    setMobileNumber(num);
+  }
 
   const handleLogin = async () => {
     if (!mobileNumber) {
@@ -42,7 +53,7 @@ const Login = () => {
           return;
         }
 
-        alert("Login Successful!");
+        notify("Login successfull");
         navigate("/welcomepage");
       } else {
         alert(data.message || "Login failed");
@@ -69,7 +80,7 @@ const Login = () => {
             id="mobile"
             placeholder="Enter Your Mobile Number"
             value={mobileNumber}
-            onChange={(e) => setMobileNumber(e.target.value)}
+            onChange={validatePhoneNumber}
             className="w-full px-4 py-2 border border-gray-400 rounded-md text-gray-800 focus:outline-none focus:ring-1 focus:ring-green-500"
           />
         </div>

@@ -255,7 +255,7 @@ const InventoryManagement = () => {
                       </td>
                       <td className="p-2 border border-gray-200">
                         <img
-                          src={product.product_img}
+                          src={"/assets/grass.png"}
                           alt={product.name}
                           className="w-8 h-8"
                         />
