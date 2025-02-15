@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 
-const Header = () => {
+const Header = ({ cartCount }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
   const notify = () => toast("Logout successfully");
@@ -14,7 +14,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem("authToken"); // Retrieve token from localStorage
+      const token = localStorage.getItem("authToken");
       console.log("Auth Token:", token);
 
       if (!token) {
@@ -33,7 +33,6 @@ const Header = () => {
       console.log("Logout Response:", data);
 
       if (response.ok) {
-        // ✅ Logout successful: Clear user session
         localStorage.removeItem("authToken");
         localStorage.removeItem("loggedInUser");
         setIsLoggedIn(false);
@@ -56,12 +55,17 @@ const Header = () => {
       </div>
       <div className="flex items-end">
         <ul className="flex p-2 m-2">
-          <li className="px-2 font-bold text-xl">
+          <li className="px-2 font-bold text-xl relative">
             <Link to="/cartpage">
               <i className="fa-solid fa-cart-shopping"></i>
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
+                  {cartCount}
+                </span>
+              )}
             </Link>
           </li>
-          <li className="px-3 font-bold text-xl">
+          <li className="px-3 font-bold text-xl relative">
             <Link to="/profilepage">
               <i className="fas fa-user"></i>
             </Link>

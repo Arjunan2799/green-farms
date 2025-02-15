@@ -16,14 +16,21 @@ import AddCommunity from "./components/AddCommunity";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import CartItems from "./components/CartItems";
 import { ToastContainer } from "react-toastify";
+import { useState } from "react";
 
 function App() {
+  const [cartCount, setCartCount] = useState(0);
   return (
     <div className="App">
       <Routes>
         <Route path="/Login" element={<Login />} />
         <Route path="/addressform" element={<AddAddressForm />} />
-        <Route path="/welcomepage" element={<WelcomePage />} />
+        <Route
+          path="/welcomepage"
+          element={
+            <WelcomePage updateCartCount={setCartCount} cartCount={cartCount} />
+          }
+        />
         <Route path="/profilepage" element={<ProfilePage />} />
         <Route path="/homepage" element={<HomePage />} />
         <Route path="/cartpage" element={<CartPage />} />

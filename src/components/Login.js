@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const [mobileNumber, setMobileNumber] = useState("");
@@ -11,7 +11,7 @@ const Login = () => {
   function validatePhoneNumber(e) {
     const num = e.target.value;
     if (num.length > 10) {
-      alert("mobile number should not be greater than 10 digits");
+      notify("mobile number should not be greater than 10 digits");
       return;
     }
     setMobileNumber(num);
@@ -48,7 +48,7 @@ const Login = () => {
         localStorage.setItem("authToken", token1);
         localStorage.setItem("loggedInUser", mobileNumber);
         if (newUser === "new") {
-          alert("Welcome new User");
+          notify("Welcome new User");
           navigate("/addressform");
           return;
         }

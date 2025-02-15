@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const CommunityManagement = () => {
-  // Community List
   const [communities, setCommunities] = useState([]);
+  const [editCommunity, setEditCommunity] = useState(null);
+  const notify = () => toast("Product added successfully");
+  const deleteToast = () => toast("Product Deleted Successfully");
+
   async function fetchProducts() {
     try {
       const response = await fetch(
@@ -45,7 +49,6 @@ const CommunityManagement = () => {
     setCommunities(formattedProducts);
   }
 
-  // New Community State
   const [newCommunity, setNewCommunity] = useState({
     community_name: "",
     community_occurence: "",
@@ -55,15 +58,12 @@ const CommunityManagement = () => {
     location: "",
   });
 
-  // Modal State (Controls visibility of form)
   const [isFormVisible, setIsFormVisible] = useState(false);
 
-  // Handle input change
   const handleChange = (e) => {
     setNewCommunity({ ...newCommunity, [e.target.name]: e.target.value });
   };
 
-  // Submit Form & Add Community
   const handleSubmit = async () => {
     if (
       !newCommunity.community_name ||
@@ -74,23 +74,44 @@ const CommunityManagement = () => {
       return;
     }
 
-    try {
-      const response = await fetch(
-        "http://localhost:8000/api/admin/add-community",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newCommunity),
-        }
+    if (!editCommunity) {
+      const isDuplicate = communities.some(
+        (c) =>
+          c.community_name.toLowerCase() ===
+          newCommunity.community_name.toLowerCase()
       );
+      if (isDuplicate) {
+        alert("Community Name already exists. Please choose a different name.");
+        return;
+      }
+    }
+
+    const url = editCommunity
+      ? `http://localhost:8000/api/admin/edit-community/${editCommunity.id}`
+      : "http://localhost:8000/api/admin/add-community";
+
+    const method = "POST";
+
+    const requestBody = { ...newCommunity };
+    delete requestBody.id;
+
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
 
       const data = await response.json();
+      console.log("API Response:", data);
 
       if (response.ok) {
-        alert("Community added successfully!");
-
+        notify(
+          editCommunity
+            ? "Community updated successfully!"
+            : "Community added successfully!"
+        );
         fetchProducts();
-
         setNewCommunity({
           community_name: "",
           community_occurence: "",
@@ -100,34 +121,44 @@ const CommunityManagement = () => {
           location: "",
         });
         setIsFormVisible(false);
+        setEditCommunity(null);
       } else {
-        alert(data.message || "Failed to add community.");
+        alert(data.data?.attributes?.message?.message || "Operation failed.");
       }
     } catch (error) {
-      console.error("Error adding community:", error);
+      console.error("Error:", error);
     }
   };
 
   const handleDelete = (id) => {
     async function deleteProduct() {
       try {
-        const response = await fetch(
-          `http://localhost:8000/api/admin/delete-community/${id}`,
-          {
-            method: "DELETE",
+        // eslint-disable-next-line no-restricted-globals
+        if (confirm("Are you sure want to delete ?")) {
+          const response = await fetch(
+            `http://localhost:8000/api/admin/delete-community/${id}`,
+            {
+              method: "DELETE",
+            }
+          );
+          if (response.ok) {
+            deleteToast("Deleted sucessfully");
+            fetchProducts();
+          } else {
+            deleteToast("failed to delete");
           }
-        );
-        if (response.ok) {
-          alert("Deleted sucessfully");
-          fetchProducts();
-        } else {
-          alert("failed to delete");
         }
       } catch (error) {
         console.error("Error fetching products:", error);
       }
     }
     deleteProduct();
+  };
+
+  const handleEditClick = (community) => {
+    setEditCommunity(community);
+    setNewCommunity(community);
+    setIsFormVisible(true);
   };
 
   return (
@@ -272,7 +303,12 @@ const CommunityManagement = () => {
                       {community.location}
                     </td>
                     <td className="p-2 border border-gray-200">
-                      <button className="text-blue-500">Edit</button>
+                      <button
+                        className="text-blue-500"
+                        onClick={() => handleEditClick(community)}
+                      >
+                        Edit
+                      </button>
                       <button
                         className="text-red-500 ml-2"
                         onClick={() => handleDelete(community.id)}

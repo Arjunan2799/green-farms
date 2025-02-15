@@ -1,8 +1,23 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const InventoryManagement = () => {
   const [products, setProducts] = useState([]);
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [editProductId, setEditProductId] = useState(null);
+  const [newProduct, setNewProduct] = useState({
+    product_name: "",
+    price: "",
+    discount: "",
+    stock: "",
+    description: "",
+    is_out_of_stock: false,
+    product_img: "",
+  });
+  const notify = () => toast("Product have been updated successfully");
+  const deleteToast = () => toast("Product Deleted Successfully");
+
   async function fetchProducts() {
     try {
       const response = await fetch(
@@ -10,15 +25,19 @@ const InventoryManagement = () => {
       );
       const data = await response.json();
       const responseData = data?.data?.attributes?.data;
-      console.log("data", data, "reponse", response);
       if (response.ok) {
-        if (responseData.length > 0) {
-          console.log("responsedata", data);
-          updateProducts(responseData);
-        } else {
-          setProducts([]);
-        }
-        //console.log("All product data:", data);
+        setProducts(
+          responseData?.map((item) => ({
+            id: item._id,
+            product_name: item.product_name,
+            price: item.price,
+            discount: item.discount,
+            stock: item.stock,
+            description: item.description,
+            is_out_of_stock: item.is_out_of_stock,
+            product_img: item.product_img,
+          })) || []
+        );
       } else {
         console.error("Failed to fetch products:", data.message);
       }
@@ -31,30 +50,6 @@ const InventoryManagement = () => {
     fetchProducts();
   }, []);
 
-  function updateProducts(productList) {
-    const formattedProducts = productList.map((item) => ({
-      id: item._id,
-      name: item.product_name,
-      price: item.price,
-      discountPrice: item.discount,
-      product_img: item.product_img,
-      description: item.description,
-    }));
-    setProducts(formattedProducts);
-  }
-
-  const [newProduct, setNewProduct] = useState({
-    product_name: "",
-    price: "",
-    discount: "",
-    stock: "",
-    description: "",
-    is_out_of_stock: false,
-    product_img: "",
-  });
-
-  const [isFormVisible, setIsFormVisible] = useState(false);
-
   const handleChange = (e) => {
     setNewProduct({ ...newProduct, [e.target.name]: e.target.value });
   };
@@ -66,22 +61,31 @@ const InventoryManagement = () => {
     }
 
     try {
-      const response = await fetch(
-        "http://localhost:8000/api/admin/add-product",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newProduct),
-        }
-      );
+      const url = editProductId
+        ? `http://localhost:8000/api/admin/edit-product/${editProductId}`
+        : "http://localhost:8000/api/admin/add-product";
+
+      const method = editProductId ? "POST" : "POST";
+      const requestBody = { ...newProduct };
+      delete requestBody.id;
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
 
       const data = await response.json();
-      console.log("postdata", data);
+      console.log("edit api resonse", data);
 
       if (response.ok) {
-        alert("Product added successfully!");
+        notify(
+          editProductId
+            ? "Product updated successfully!"
+            : "Product added successfully!"
+        );
         fetchProducts();
-
+        setIsFormVisible(false);
         setNewProduct({
           product_name: "",
           price: "",
@@ -91,17 +95,19 @@ const InventoryManagement = () => {
           is_out_of_stock: false,
           product_img: "",
         });
-        setIsFormVisible(false);
+        setEditProductId(null);
       } else {
-        alert(data.message || "Failed to add product.");
+        alert(data.message || "Operation failed.");
       }
     } catch (error) {
-      console.error("Error adding product:", error);
+      console.error("Error:", error);
     }
   };
-  const handleDelete = (id) => {
-    async function deleteProduct() {
-      try {
+
+  const handleDelete = async (id) => {
+    try {
+      // eslint-disable-next-line no-restricted-globals
+      if (confirm("Are you sure want to delete")) {
         const response = await fetch(
           `http://localhost:8000/api/admin/delete-product/${id}`,
           {
@@ -109,16 +115,21 @@ const InventoryManagement = () => {
           }
         );
         if (response.ok) {
-          alert("Deleted sucessfully");
+          deleteToast();
           fetchProducts();
         } else {
-          alert("failed to delete");
+          deleteToast("Failed to delete");
         }
-      } catch (error) {
-        console.error("Error fetching products:", error);
       }
+    } catch (error) {
+      console.error("Error deleting product:", error);
     }
-    deleteProduct();
+  };
+
+  const handleEdit = (product) => {
+    setNewProduct(product);
+    setEditProductId(product.id);
+    setIsFormVisible(true);
   };
 
   return (
@@ -151,7 +162,19 @@ const InventoryManagement = () => {
             <h1 className="text-xl font-bold">Inventory Management</h1>
             <button
               className="m-2 p-2 bg-black text-white hover:bg-blue-600"
-              onClick={() => setIsFormVisible(true)}
+              onClick={() => {
+                setNewProduct({
+                  product_name: "",
+                  price: "",
+                  discount: "",
+                  stock: "",
+                  description: "",
+                  is_out_of_stock: false,
+                  product_img: "",
+                });
+                setEditProductId(null);
+                setIsFormVisible(true);
+              }}
             >
               Add Product
             </button>
@@ -159,7 +182,9 @@ const InventoryManagement = () => {
 
           {isFormVisible && (
             <div className="p-4 border border-gray-300 bg-white shadow-md">
-              <h2 className="text-lg font-semibold mb-2">Add New Product</h2>
+              <h2 className="text-lg font-semibold mb-2">
+                {editProductId ? "Edit Product" : "Add New Product"}
+              </h2>
               <div className="space-y-2">
                 <input
                   type="text"
@@ -215,7 +240,7 @@ const InventoryManagement = () => {
                   className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                   onClick={handleSubmit}
                 >
-                  Submit
+                  {editProductId ? "Update" : "Submit"}
                 </button>
                 <button
                   className="p-2 bg-red-600 text-white rounded-lg ml-2 hover:bg-red-700"
@@ -231,40 +256,36 @@ const InventoryManagement = () => {
             <table className="w-full border border-gray-200">
               <thead className="bg-purple-400">
                 <tr>
-                  <th className="p-2 border border-gray-200">Product Name</th>
-                  <th className="p-2 border border-gray-200">Price</th>
-                  <th className="p-2 border border-gray-200">Discount Price</th>
-                  <th className="p-2 border border-gray-200">Image</th>
-                  <th className="p-2 border border-gray-200">Description</th>
-                  <th className="p-2 border border-gray-200">Action</th>
+                  <th className="p-2 border">Product Name</th>
+                  <th className="p-2 border">Price</th>
+                  <th className="p-2 border">Discount</th>
+                  <th className="p-2 border">Image</th>
+                  <th className="p-2 border">Description</th>
+                  <th className="p-2 border">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {console.log("productupdates", products)}
                 {products.length > 0 ? (
                   products.map((product) => (
                     <tr key={product.id} className="even:bg-gray-50">
-                      <td className="p-2 border border-gray-200">
-                        {product.name}
-                      </td>
-                      <td className="p-2 border border-gray-200">
-                        {product.price}
-                      </td>
-                      <td className="p-2 border border-gray-200">
-                        {product.discountPrice}
-                      </td>
-                      <td className="p-2 border border-gray-200">
+                      <td className="p-2 border">{product.product_name}</td>
+                      <td className="p-2 border">{product.price}</td>
+                      <td className="p-2 border">{product.discount}</td>
+                      <td className="p-2 border">
                         <img
                           src={"/assets/grass.png"}
-                          alt={product.name}
+                          alt={product.product_name}
                           className="w-8 h-8"
                         />
                       </td>
-                      <td className="p-2 border border-gray-200">
-                        {product.description}
-                      </td>
-                      <td className="p-2 border border-gray-200">
-                        <button className="text-blue-500">Edit</button>
+                      <td className="p-2 border">{product.description}</td>
+                      <td className="p-2 border">
+                        <button
+                          className="text-blue-500"
+                          onClick={() => handleEdit(product)}
+                        >
+                          Edit
+                        </button>
                         <button
                           className="text-red-500 ml-2"
                           onClick={() => handleDelete(product.id)}

@@ -3,7 +3,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-const CartItems = () => {
+const CartItems = ({ updateCartCount }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [count, setCount] = useState([]);
@@ -26,10 +26,15 @@ const CartItems = () => {
         if (responseData.length > 0) {
           console.log("responsedatacart", data);
           updateProducts(responseData);
+          const newCount = {};
+          responseData.forEach((item) => {
+            [item.product_id] = item.qty;
+          });
+          updateCartCount(responseData.length);
+          setCount(newCount);
         } else {
           setCartItems([]);
         }
-        //console.log("All product data:", data);
       } else {
         console.error("Failed to fetch products:", data.message);
       }
@@ -60,6 +65,7 @@ const CartItems = () => {
       [productId]: (prevCount[productId] || 0) + 1,
     }));
     notify();
+    updateCartCount(Object.values(count).reduce((sum, qty) => sum + qty, 1));
   }
 
   async function handleAddToCart(productId) {
@@ -126,9 +132,6 @@ const CartItems = () => {
                   >
                     Add
                   </button>
-                  <span className="font-semibold text-lg">
-                    {count[item.id] || 0}
-                  </span>
                 </div>
               </div>
             </div>

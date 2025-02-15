@@ -2,10 +2,10 @@ import React from "react";
 import CartItems from "./CartItems";
 import Header from "./Header";
 
-const WelcomePage = () => {
+const WelcomePage = ({ cartCount, updateCartCount }) => {
   return (
     <div>
-      <Header />
+      <Header cartCount={cartCount} />
       <div className="p-2 m-2">
         <div>
           <h2 className=" text-3xl font-bold px-2 mx-2">Welcome DJ</h2>
@@ -17,7 +17,7 @@ const WelcomePage = () => {
           </div>
         </div>
 
-        <CartItems />
+        <CartItems updateCartCount={updateCartCount} />
       </div>
     </div>
   );

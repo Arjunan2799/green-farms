@@ -29,7 +29,9 @@ const CartPage = () => {
         qty: item.qty || 1,
         totalPrice: (item.product_id?.price || 0) * (item.qty || 1),
         user_id: item.user_id,
+        cart_id: item.cart_id,
       }));
+      console.log("formateddata", formattedCartItems);
       if (response.ok) {
         setCartItems(formattedCartItems);
       } else {
@@ -49,78 +51,51 @@ const CartPage = () => {
   async function handleIncreaseQuantity(productId) {
     console.log("Increasing quantity for product:", productId);
     try {
-      const response = await fetch("http://localhost:8000/api/user/add-cart", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token,
-        },
-        body: JSON.stringify({
-          product_id: productId,
-          qty: 1,
-        }),
-      });
-
-      const data = await response.json();
-      console.log("increasecart", data);
-      if (response.ok) {
-        setCartItems((prevItems) =>
-          prevItems.map((item) =>
-            item.product_id === productId
-              ? {
-                  ...item,
-                  qty: item.qty + 1,
-                  totalPrice: (item.qty + 1) * item.price,
-                }
-              : item
-          )
-        );
-        fetchCartItems();
-      } else {
-        console.error("Failed to add item to cart:", data.message);
-      }
-    } catch (error) {
-      console.error("Error adding item to cart:", error);
-    }
-  }
-  async function handleDecreaseQuantity(productId) {
-    console.log("Decreasing quantity for product:", productId);
-
-    try {
       const response = await fetch(
-        `http://localhost:8000/api/user/decerment-cart/${productId}`,
+        `http://localhost:8000/api/user/incerment-homepage-cart/${productId}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: token,
           },
-          body: JSON.stringify({
-            qty: -1, // Send -1 to decrease quantity
-          }),
+          body: JSON.stringify({ qty: 1 }),
         }
       );
 
       const data = await response.json();
-      console.log("decrease cart response:", data);
+      console.log("Increase cart response:", data);
 
       if (response.ok) {
-        setCartItems(
-          (prevItems) =>
-            prevItems
-              .map((item) =>
-                item.product_id === productId
-                  ? {
-                      ...item,
-                      qty: item.qty - 1,
-                      totalPrice: (item.qty - 1) * item.price,
-                    }
-                  : item
-              )
-              .filter((item) => item.qty > 0) // Remove items with qty 0
-        );
+        fetchCartItems();
+      } else {
+        console.error("Failed to increase item quantity:", data.message);
+      }
+    } catch (error) {
+      console.error("Error increasing item quantity:", error);
+    }
+  }
 
-        fetchCartItems(); // Refresh cart items
+  async function handleDecreaseQuantity(cartId) {
+    console.log("Decreasing quantity for product:", cartId);
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/user/decerment-homepage-cart/${cartId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+          body: JSON.stringify({ qty: -1 }),
+        }
+      );
+
+      const data = await response.json();
+      console.log("Decrease cart response:", data);
+
+      if (response.ok) {
+        fetchCartItems();
       } else {
         console.error("Failed to decrease item quantity:", data.message);
       }
@@ -137,8 +112,7 @@ const CartPage = () => {
           onClick={() => navigate(-1)}
           className="flex items-center space-x-2"
         >
-          <img src="/back-arrow.png" alt="Back" className="h-6 w-6" />
-          <span className="text-gray-700">Back</span>
+          <i class="fa-solid fa-arrow-left font-bold"></i>
         </button>
       </header>
 
@@ -165,7 +139,7 @@ const CartPage = () => {
               <div className="flex items-center space-x-2">
                 <button
                   className="bg-green-100 text-green-600 px-3 py-1 rounded-lg"
-                  onClick={() => handleDecreaseQuantity(item.user_id)}
+                  onClick={() => handleDecreaseQuantity(item.id)}
                 >
                   -
                 </button>

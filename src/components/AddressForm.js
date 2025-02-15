@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 const AddAddressForm = () => {
   const [addressDetails, setAddressDetails] = useState({
     name: "",
@@ -8,8 +9,9 @@ const AddAddressForm = () => {
     flat: "",
     pincode: "",
   });
-  const [communities, setCommunities] = useState([]); // Store community list
+  const [communities, setCommunities] = useState([]);
   const navigate = useNavigate();
+  const notify = () => toast("Address Added Successfully");
   console.log("getstatteee", communities);
   async function fetchCommunity() {
     try {
@@ -22,7 +24,7 @@ const AddAddressForm = () => {
 
       if (response.ok) {
         if (responseData.length > 0) {
-          setCommunities(responseData); // Store communities for dropdown
+          setCommunities(responseData);
         } else {
           setCommunities([]);
         }
@@ -43,9 +45,7 @@ const AddAddressForm = () => {
     console.log(`Updating field: ${id}, Value: ${value}`);
 
     if (id === "community") {
-      const selectedCommunity = communities.find(
-        (c) => c.community_no === value
-      );
+      const selectedCommunity = communities.find((c) => c._id === value);
       setAddressDetails((prev) => ({
         ...prev,
         community_id: selectedCommunity ? selectedCommunity._id : "",
@@ -89,7 +89,7 @@ const AddAddressForm = () => {
           },
           body: JSON.stringify({
             name: addressDetails.name,
-            community_id: communities._id,
+            community_id: addressDetails.community_id,
             block: addressDetails.block,
             flat_door: addressDetails.flat,
             pincode: addressDetails.pincode,
@@ -101,7 +101,7 @@ const AddAddressForm = () => {
       console.log("address added", data);
 
       if (response.ok) {
-        alert("Address saved successfully!");
+        notify("Address saved successfully!");
         navigate("/welcomepage");
       } else {
         alert(data.message || "Failed to save address.");
@@ -153,7 +153,7 @@ const AddAddressForm = () => {
             >
               <option value="">Select your community</option>
               {communities.map((community) => (
-                <option key={community._id} value={community.community_no}>
+                <option key={community._id} value={community._id}>
                   {community.community_name}
                 </option>
               ))}
