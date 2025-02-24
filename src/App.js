@@ -16,10 +16,39 @@ import AddCommunity from "./components/AddCommunity";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import CartItems from "./components/CartItems";
 import { ToastContainer } from "react-toastify";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Test from "./components/Test";
 
 function App() {
   const [cartCount, setCartCount] = useState(0);
+  const [productCount, setProductCount] = useState(0);
+  const [cartItems, setCartItems] = useState([]);
+  const token = localStorage.getItem("authToken");
+  async function fetchCartItems() {
+    try {
+      const response = await fetch("http://localhost:8000/api/user/cart", {
+        method: "GET",
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      const data = await response.json();
+      console.log("aaaaaaaaaaccccc", data);
+      const responseData = data?.data?.attributes?.data || [];
+      if (response.ok) {
+        setProductCount(responseData.length);
+        setCartItems(responseData);
+      } else {
+        console.error("Failed to fetch cart items:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching cart items:", error);
+    }
+  }
+  useEffect(() => {
+    fetchCartItems();
+  }, [cartCount]);
   return (
     <div className="App">
       <Routes>
@@ -28,7 +57,11 @@ function App() {
         <Route
           path="/welcomepage"
           element={
-            <WelcomePage updateCartCount={setCartCount} cartCount={cartCount} />
+            <WelcomePage
+              updateCartCount={setCartCount}
+              cartCount={productCount}
+              cartItems={cartItems}
+            />
           }
         />
         <Route path="/profilepage" element={<ProfilePage />} />
@@ -43,6 +76,7 @@ function App() {
         <Route path="/editpanel" element={<EditProduct />} />
         <Route path="/adduser" element={<AddUser />} />
         <Route path="/addcommunity" element={<AddCommunity />} />
+        <Route path="/test" element={<Test />} />
       </Routes>
       <ToastContainer />
     </div>
