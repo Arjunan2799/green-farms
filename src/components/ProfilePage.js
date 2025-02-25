@@ -73,7 +73,7 @@ const ProfilePage = () => {
   }
 
   useEffect(() => {
-    fetchProfile("userId"); // Pass the correct user ID
+    fetchProfile("userId");
     fetchCommunity();
   }, []);
 

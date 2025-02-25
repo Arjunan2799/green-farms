@@ -168,7 +168,10 @@ const CartPage = () => {
               .toFixed(2)}
           </span>
         </div>
-        <button className="bg-green-500 text-white w-full py-2 rounded-lg mb-2">
+        <button
+          className="bg-green-500 text-white w-full py-2 rounded-lg mb-2"
+          onClick={() => navigate("/checkoutpage")}
+        >
           Proceed To Buy
         </button>
         <button className="border border-green-500 text-green-500 w-full py-2 rounded-lg">

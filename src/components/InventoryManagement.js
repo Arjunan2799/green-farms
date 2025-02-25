@@ -8,6 +8,7 @@ const InventoryManagement = () => {
   const [editProductId, setEditProductId] = useState(null);
   const [newProduct, setNewProduct] = useState({
     product_name: "",
+    product_type: "",
     price: "",
     discount: "",
     stock: "",
@@ -30,6 +31,7 @@ const InventoryManagement = () => {
           responseData?.map((item) => ({
             id: item._id,
             product_name: item.product_name,
+            product_type: item.product_type,
             price: item.price,
             discount: item.discount,
             stock: item.stock,
@@ -51,11 +53,29 @@ const InventoryManagement = () => {
   }, []);
 
   const handleChange = (e) => {
-    setNewProduct({ ...newProduct, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    // If the field being changed is the product name, check if it's modified
+    if (name === "product_name") {
+      setNewProduct((prevProduct) => ({
+        ...prevProduct,
+        product_name: value || prevProduct.originalName, // Keep old name if empty
+      }));
+    } else {
+      setNewProduct((prevProduct) => ({
+        ...prevProduct,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = async () => {
-    if (!newProduct.product_name || !newProduct.price || !newProduct.stock) {
+    if (
+      !newProduct.product_name ||
+      !newProduct.product_type ||
+      !newProduct.price ||
+      !newProduct.stock
+    ) {
       alert("Please fill in all required fields.");
       return;
     }
@@ -88,6 +108,7 @@ const InventoryManagement = () => {
         setIsFormVisible(false);
         setNewProduct({
           product_name: "",
+          product_type: "",
           price: "",
           discount: "",
           stock: "",
@@ -165,6 +186,7 @@ const InventoryManagement = () => {
               onClick={() => {
                 setNewProduct({
                   product_name: "",
+                  product_type: "",
                   price: "",
                   discount: "",
                   stock: "",
@@ -191,6 +213,14 @@ const InventoryManagement = () => {
                   placeholder="Product Name"
                   name="product_name"
                   value={newProduct.product_name}
+                  onChange={handleChange}
+                  className="border p-2 w-full"
+                />
+                <input
+                  type="text"
+                  placeholder="Product Type"
+                  name="product_type"
+                  value={newProduct.product_type}
                   onChange={handleChange}
                   className="border p-2 w-full"
                 />
@@ -257,6 +287,7 @@ const InventoryManagement = () => {
               <thead className="bg-purple-400">
                 <tr>
                   <th className="p-2 border">Product Name</th>
+                  <th className="p-2 border">Product Type</th>
                   <th className="p-2 border">Price</th>
                   <th className="p-2 border">Discount</th>
                   <th className="p-2 border">Image</th>
@@ -269,6 +300,7 @@ const InventoryManagement = () => {
                   products.map((product) => (
                     <tr key={product.id} className="even:bg-gray-50">
                       <td className="p-2 border">{product.product_name}</td>
+                      <td className="p-2 border">{product.product_type}</td>
                       <td className="p-2 border">{product.price}</td>
                       <td className="p-2 border">{product.discount}</td>
                       <td className="p-2 border">

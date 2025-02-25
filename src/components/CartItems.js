@@ -150,19 +150,21 @@ const CartItems = ({ cartCount, updateCartCount, cartProductArray }) => {
       {loading ? (
         Object.values(cartItems).map((item) => (
           <div key={item.id} className="p-2">
-            <div className="w-full flex flex-col p-4 bg-white rounded-lg shadow-md">
+            <div className="w-full flex flex-col p-4 bg-white rounded-lg shadow-md mb-4">
               <img
                 src={"/assets/grass.png"}
-                className="w-full h-44 object-cover rounded-lg"
+                className="w-full h-32 md:h-44 object-cover rounded-lg"
                 alt={item.name}
               />
-              <div className="flex flex-col">
-                <span className="font-semibold">{item.name}</span>
-                <span className="text-gray-500">₹{item.price}</span>
-              </div>
-              <div className="flex justify-end w-full">
+
+              <div className="flex justify-between items-center mt-2">
+                <div className="flex flex-col">
+                  <span className="font-semibold">{item.name}</span>
+                  <span className="text-gray-500">₹{item.price}</span>
+                </div>
+
                 {item.count > 0 ? (
-                  <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleDecreseQuantity(item.id, -1)}
                       className="px-2 py-1 bg-gray-300 rounded"
@@ -180,7 +182,7 @@ const CartItems = ({ cartCount, updateCartCount, cartProductArray }) => {
                 ) : (
                   <button
                     onClick={() => handleAddToCart(item.id)}
-                    className="mt-2 px-4 py-2 bg-green-200 rounded-lg"
+                    className="px-4 py-2 bg-green-200 rounded-lg"
                   >
                     Add
                   </button>
@@ -200,7 +202,7 @@ const CartItems = ({ cartCount, updateCartCount, cartProductArray }) => {
               <img
                 key={item.cart_id}
                 src={"/assets/grass.png"}
-                alt={item.product_id.product_name}
+                alt={item?.product_id?.product_name}
                 className="w-8 h-8 rounded-full border-2 border-white"
                 style={{ zIndex: cartProductArray.length - index }}
               />
