@@ -18,6 +18,8 @@ import CartItems from "./components/CartItems";
 import { ToastContainer } from "react-toastify";
 import { useEffect, useState } from "react";
 import Test from "./components/Test";
+// import { Provider } from "react-redux";
+// import appStore from "./utils/appStore";
 
 function App() {
   const [cartCount, setCartCount] = useState(0);
@@ -50,6 +52,7 @@ function App() {
     fetchCartItems();
   }, [cartCount]);
   return (
+    // <Provider store={appStore}>
     <div className="App">
       <Routes>
         <Route path="/Login" element={<Login />} />
@@ -80,6 +83,7 @@ function App() {
       </Routes>
       <ToastContainer />
     </div>
+    // </Provider>
   );
 }
 

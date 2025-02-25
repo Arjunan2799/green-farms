@@ -6,44 +6,83 @@ import { toast } from "react-toastify";
 
 const CartItems = ({ cartCount, updateCartCount, cartProductArray }) => {
   const [cartItems, setCartItems] = useState({});
+  const [cartItemsCount, setCartItemsCount] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("authToken");
   const navigate = useNavigate();
+  console.log("cartItem :", cartItems);
+  console.log("cartProductArray :", cartProductArray);
+  useEffect(() => {
+    setCartItems(cartProductArray);
+  }, [cartProductArray]);
 
   useEffect(() => {
-    fetchCart();
-  }, []);
+    fetchCartItems();
+  }, [cartCount]);
 
   console.log("cartCount : ", cartCount);
-  async function fetchCart() {
+  // async function fetchCart() {
+  //   try {
+  //     const response = await fetch(
+  //       "http://localhost:8000/api/admin/all-product"
+  //     );
+  //     const data = await response.json();
+  //     const responseData = data?.data?.attributes?.data || [];
+
+  //     if (response.ok) {
+  //       const updatedCart = {};
+  //       responseData.forEach((item) => {
+  //         updatedCart[item._id] = {
+  //           id: item._id,
+  //           name: item.product_name,
+  //           price: item.price,
+  //           discountPrice: item.discount,
+  //           product_img: item.product_img,
+  //           description: item.description,
+  //           count: item.qty || 0,
+  //         };
+  //       });
+
+  //       setCartItems(updatedCart);
+  //       updateCartCount(responseData.length);
+  //     } else {
+  //       console.error("Failed to fetch products:", data.message);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching products:", error);
+  //   }
+  // }
+  async function fetchCartItems() {
     try {
-      const response = await fetch(
-        "http://localhost:8000/api/admin/all-product"
-      );
+      const response = await fetch("http://localhost:8000/api/user/cart", {
+        method: "GET",
+        headers: {
+          Authorization: token,
+        },
+      });
+
       const data = await response.json();
+      console.log("aaaaaaaaaaccccc", data);
       const responseData = data?.data?.attributes?.data || [];
-
+      console.log("responsedataaaaa", responseData);
+      const formattedCartItems = responseData.map((item) => ({
+        id: item.product_id?._id,
+        name: item.product_id?.product_name || "Unknown Item",
+        price: item.product_id?.price || 0,
+        qty: item.qty || 1,
+        totalPrice: (item.product_id?.price || 0) * (item.qty || 1),
+        user_id: item.user_id,
+        cart_id: item.cart_id,
+        product_img: item.product_id.product_img,
+      }));
+      console.log("formateddata", formattedCartItems);
       if (response.ok) {
-        const updatedCart = {};
-        responseData.forEach((item) => {
-          updatedCart[item._id] = {
-            id: item._id,
-            name: item.product_name,
-            price: item.price,
-            discountPrice: item.discount,
-            product_img: item.product_img,
-            description: item.description,
-            count: item.qty || 0,
-          };
-        });
-
-        setCartItems(updatedCart);
-        updateCartCount(responseData.length);
+        setCartItemsCount(formattedCartItems);
       } else {
-        console.error("Failed to fetch products:", data.message);
+        console.error("Failed to fetch cart items:", data.message);
       }
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("Error fetching cart items:", error);
     }
   }
 
@@ -198,13 +237,13 @@ const CartItems = ({ cartCount, updateCartCount, cartProductArray }) => {
       {cartCount > 0 && (
         <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white p-4 rounded-full flex items-center gap-2 shadow-lg">
           <div className="flex -space-x-2">
-            {cartProductArray.map((item, index) => (
+            {cartItemsCount.map((item, index) => (
               <img
                 key={item.cart_id}
                 src={"/assets/grass.png"}
-                alt={item?.product_id?.product_name}
+                alt={item?.name}
                 className="w-8 h-8 rounded-full border-2 border-white"
-                style={{ zIndex: cartProductArray.length - index }}
+                style={{ zIndex: cartItems.length - index }}
               />
             ))}
           </div>
