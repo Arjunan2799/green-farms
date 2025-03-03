@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-const Header = ({ cartCount }) => {
+const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
   const notify = () => toast("Logout successfully");
+  const cartCount = useSelector((state) => state.cart.count);
+  console.log(
+    "useSelector",
+    useSelector((state) => state.cart)
+  );
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem("loggedInUser");

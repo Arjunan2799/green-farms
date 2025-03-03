@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 const CheckoutPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const [addressDetails, setAddressDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false); // Toggle for edit mode
-  const [editedAddress, setEditedAddress] = useState({}); // State for edited data
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedAddress, setEditedAddress] = useState({});
+  const countItemSelector = useSelector((state) => state.cart.count);
+  const cartItemSelector = useSelector((state) => state.cart.items);
 
   const token = localStorage.getItem("authToken");
   const userId = localStorage.getItem("userId");
@@ -87,6 +90,7 @@ const CheckoutPage = () => {
         alert("Address updated successfully!");
         setAddressDetails(editedAddress);
         setIsEditing(false);
+        fetchProfile();
       } else {
         alert("Failed to update address.");
       }
@@ -113,13 +117,13 @@ const CheckoutPage = () => {
         <div></div>
       </header>
 
-      <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
+      <div className=" bg-orange-100 p-4 rounded-lg shadow-sm mb-4">
         {loading ? (
           <p>Loading cart items...</p>
-        ) : cartItems.length === 0 ? (
+        ) : cartItemSelector?.length === 0 ? (
           <p className="text-gray-500 text-center">No items in cart.</p>
         ) : (
-          cartItems.map((item) => (
+          cartItemSelector.slice(0, 1).map((item) => (
             <div
               key={item.id}
               className="flex items-center space-x-4 mb-4 border-b pb-4 last:border-0"
@@ -130,15 +134,16 @@ const CheckoutPage = () => {
                 className="h-16 w-16 rounded-lg object-cover"
               />
               <div className="flex-1">
-                <p className="font-semibold">{item.name}</p>
+                <p className="font-semibold">{countItemSelector} Items</p>
               </div>
+              <br />
               <button className="text-blue-500">View Details</button>
             </div>
           ))
         )}
       </div>
 
-      <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
+      <div className="bg-orange-100 p-4 rounded-lg shadow-sm mb-4">
         <h3 className="font-semibold text-gray-700 mb-2">Delivery to</h3>
         {loading ? (
           <p>Loading address...</p>

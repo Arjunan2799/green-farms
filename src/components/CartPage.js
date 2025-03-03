@@ -2,107 +2,19 @@ import React from "react";
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import useCartIncrease from "../customhooks/useCartIncrease";
+import { useSelector } from "react-redux";
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [cartshow, setCartShow] = useState(true);
   const token = localStorage.getItem("authToken");
   const navigate = useNavigate();
-  console.log("cartstate", cartItems);
-  async function fetchCartItems() {
-    try {
-      const response = await fetch("http://localhost:8000/api/user/cart", {
-        method: "GET",
-        headers: {
-          Authorization: token,
-        },
-      });
-
-      const data = await response.json();
-      console.log("aaaaaaaaaaccccc", data);
-      const responseData = data?.data?.attributes?.data || [];
-      console.log("responsedataaaaa", responseData);
-      const formattedCartItems = responseData.map((item) => ({
-        id: item.product_id?._id,
-        name: item.product_id?.product_name || "Unknown Item",
-        price: item.product_id?.price || 0,
-        qty: item.qty || 1,
-        totalPrice: (item.product_id?.price || 0) * (item.qty || 1),
-        user_id: item.user_id,
-        cart_id: item.cart_id,
-      }));
-      console.log("formateddata", formattedCartItems);
-      if (response.ok) {
-        setCartItems(formattedCartItems);
-      } else {
-        console.error("Failed to fetch cart items:", data.message);
-      }
-    } catch (error) {
-      console.error("Error fetching cart items:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    fetchCartItems();
-  }, []);
-
-  async function handleIncreaseQuantity(productId) {
-    console.log("Increasing quantity for product:", productId);
-    try {
-      const response = await fetch(
-        `http://localhost:8000/api/user/incerment-homepage-cart/${productId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token,
-          },
-          body: JSON.stringify({ qty: 1 }),
-        }
-      );
-
-      const data = await response.json();
-      console.log("Increase cart response:", data);
-
-      if (response.ok) {
-        fetchCartItems();
-      } else {
-        console.error("Failed to increase item quantity:", data.message);
-      }
-    } catch (error) {
-      console.error("Error increasing item quantity:", error);
-    }
-  }
-
-  async function handleDecreaseQuantity(cartId) {
-    console.log("Decreasing quantity for product:", cartId);
-    try {
-      const response = await fetch(
-        `http://localhost:8000/api/user/decerment-homepage-cart/${cartId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token,
-          },
-          body: JSON.stringify({ qty: -1 }),
-        }
-      );
-
-      const data = await response.json();
-      console.log("Decrease cart response:", data);
-
-      if (response.ok) {
-        fetchCartItems();
-      } else {
-        console.error("Failed to decrease item quantity:", data.message);
-      }
-    } catch (error) {
-      console.error("Error decreasing item quantity:", error);
-    }
-  }
+  const cartItemSelector = useSelector((state) => state.cart.items);
+  const { handleIncreaseQuantity, handleDecreseQuantity, handleDeleteProduct } =
+    useCartIncrease();
+  console.log("cartItemSelector", cartItemSelector);
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -117,10 +29,8 @@ const CartPage = () => {
       </header>
 
       <div className="space-y-4 mb-6">
-        {loading ? (
-          <p>Loading cart items...</p>
-        ) : cartItems.length > 0 ? (
-          cartItems.map((item, index) => (
+        {cartItemSelector.length > 0 ? (
+          cartItemSelector.map((item, index) => (
             <div
               key={index}
               className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm"
@@ -132,23 +42,33 @@ const CartPage = () => {
                   className="h-16 w-16 rounded-lg object-cover"
                 />
                 <div>
-                  <p className="font-semibold">{item.name}</p>
-                  <p className="text-gray-500">₹{item.price.toFixed(2)}</p>
+                  <p className="font-semibold">
+                    {item?.product_id?.product_name}
+                  </p>
+                  <p className="text-gray-500">
+                    ₹{item.product_id?.price?.toFixed(2)}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
                 <button
                   className="bg-green-100 text-green-600 px-3 py-1 rounded-lg"
-                  onClick={() => handleDecreaseQuantity(item.id)}
+                  onClick={() => handleDecreseQuantity(item.product_id?._id)}
                 >
                   -
                 </button>
                 <span>{item.qty}</span>
                 <button
                   className="bg-green-100 text-green-600 px-3 py-1 rounded-lg"
-                  onClick={() => handleIncreaseQuantity(item.id)}
+                  onClick={() => handleIncreaseQuantity(item.product_id?._id)}
                 >
                   +
+                </button>
+                <button
+                  className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                  onClick={() => handleDeleteProduct(item.product_id?._id)}
+                >
+                  Delete
                 </button>
               </div>
             </div>
@@ -163,13 +83,16 @@ const CartPage = () => {
           <span>Subtotal</span>
           <span>
             ₹
-            {cartItems
-              .reduce((total, item) => total + item.totalPrice, 0)
+            {cartItemSelector
+              .reduce(
+                (total, item) => total + item.product_id?.price * item.qty,
+                0
+              )
               .toFixed(2)}
           </span>
         </div>
         <button
-          className="bg-green-500 text-white w-full py-2 rounded-lg mb-2"
+          className="bg-green-700 text-white w-full py-2 rounded-lg mb-2"
           onClick={() => navigate("/checkoutpage")}
         >
           Proceed To Buy

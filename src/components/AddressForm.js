@@ -12,7 +12,7 @@ const AddAddressForm = () => {
   const [communities, setCommunities] = useState([]);
   const navigate = useNavigate();
   const notify = () => toast("Address Added Successfully");
-  console.log("getstatteee", communities);
+  //console.log("getstatteee", communities);
   async function fetchCommunity() {
     try {
       const response = await fetch(
@@ -20,7 +20,7 @@ const AddAddressForm = () => {
       );
       const data = await response.json();
       const responseData = data?.data?.attributes?.data;
-      console.log("getadress", responseData);
+      // console.log("getadress", responseData);
 
       if (response.ok) {
         if (responseData.length > 0) {
@@ -42,7 +42,7 @@ const AddAddressForm = () => {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    console.log(`Updating field: ${id}, Value: ${value}`);
+    // console.log(`Updating field: ${id}, Value: ${value}`);
 
     if (id === "community") {
       const selectedCommunity = communities.find((c) => c._id === value);
@@ -98,7 +98,7 @@ const AddAddressForm = () => {
       );
 
       const data = await response.json();
-      console.log("address added", data);
+      // console.log("address added", data);
 
       if (response.ok) {
         notify("Address saved successfully!");
@@ -111,7 +111,6 @@ const AddAddressForm = () => {
       alert("An error occurred while saving the address.");
     }
   };
-  console.log("Submitting Address Details:", addressDetails);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

@@ -1,14 +1,22 @@
 import React, { useEffect, useState } from "react";
 import CartItems from "./CartItems";
 import Header from "./Header";
+import useFetchProductByType from "../customhooks/useFetchProductByType";
+import { useSelector } from "react-redux";
 
-const WelcomePage = ({ cartCount, updateCartCount, cartItems }) => {
+const WelcomePage = () => {
   const [userName, setUserName] = useState("");
   const [loading, setLoading] = useState(true);
-  const [filteredProducts, setFilteredProducts] = useState(cartItems);
+  const [productType, setProductType] = useState("Greens");
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const token = localStorage.getItem("authToken");
+  const fetchProductByType = useFetchProductByType();
+  const productsByType = useSelector(
+    (state) => state.allProducts.productByType
+  );
 
   console.log("filter product:", filteredProducts);
+  console.log("productsByType:", productsByType);
 
   async function fetchProfile(userId) {
     try {
@@ -33,49 +41,19 @@ const WelcomePage = ({ cartCount, updateCartCount, cartItems }) => {
     }
   }
 
-  async function fetchProductsByType(type) {
-    try {
-      const response = await fetch(
-        `http://localhost:8000/api/admin/list/product/${type}`,
-        {
-          method: "GET",
-          headers: { Authorization: token },
-        }
-      );
-
-      const data = await response.json();
-      console.log("filtered data", data);
-      if (response.ok) {
-        const updatedCart = {};
-        const responseArray = data?.data?.attributes?.data;
-        responseArray.forEach((item) => {
-          updatedCart[item._id] = {
-            id: item._id,
-            name: item.product_name,
-            price: item.price,
-            discountPrice: item.discount,
-            product_img: item.product_img,
-            description: item.description,
-            count: item.qty || 0,
-          };
-        });
-        setFilteredProducts(updatedCart);
-      } else {
-        console.error(`Failed to fetch products for ${type}:`, data.message);
-      }
-    } catch (error) {
-      console.error(`Error fetching products for ${type}:`, error);
-    }
-  }
+  useEffect(() => {
+    productsByType[productType] &&
+      setFilteredProducts(productsByType[productType]);
+  }, [productType, productsByType]);
 
   useEffect(() => {
     fetchProfile();
-    fetchProductsByType("Greens");
+    fetchProductByType("Greens");
   }, []);
 
   return (
     <div>
-      <Header cartCount={cartCount} />
+      <Header />
       <div className="p-2 m-2">
         <header className="flex justify-between items-center pb-6">
           <h1 className="text-xl font-semibold">
@@ -85,8 +63,11 @@ const WelcomePage = ({ cartCount, updateCartCount, cartItems }) => {
 
         <div className="flex flex-wrap gap-2 mb-4">
           <button
-            onClick={() => fetchProductsByType("Greens")}
-            className="px-4 py-2 bg-[#E7DBC4] rounded-lg flex items-center sm:w-auto"
+            onClick={() => {
+              fetchProductByType("Greens");
+              setProductType("Greens");
+            }}
+            className="px-2 py-2 bg-[#E7DBC4] rounded-lg flex items-center sm:w-auto"
           >
             <img
               src="/assets/grass.png"
@@ -96,8 +77,11 @@ const WelcomePage = ({ cartCount, updateCartCount, cartItems }) => {
             Greens
           </button>
           <button
-            onClick={() => fetchProductsByType("Batters")}
-            className="px-4 py-2 bg-[#E7DBC4] rounded-lg flex items-center sm:w-auto"
+            onClick={() => {
+              fetchProductByType("Batters");
+              setProductType("Batters");
+            }}
+            className="px-2 py-2 bg-[#E7DBC4] rounded-lg flex items-center sm:w-auto"
           >
             <img
               src="/assets/grass.png"
@@ -107,8 +91,11 @@ const WelcomePage = ({ cartCount, updateCartCount, cartItems }) => {
             Batters
           </button>
           <button
-            onClick={() => fetchProductsByType("Sprouts")}
-            className="px-4 py-2 bg-[#E7DBC4] rounded-lg flex items-center sm:w-auto"
+            onClick={() => {
+              fetchProductByType("Sprouts");
+              setProductType("Sprouts");
+            }}
+            className="px-2 py-2 bg-[#E7DBC4] rounded-lg flex items-center sm:w-auto"
           >
             <img
               src="/assets/grass.png"
@@ -117,24 +104,9 @@ const WelcomePage = ({ cartCount, updateCartCount, cartItems }) => {
             />
             Sprouts
           </button>
-          <button
-            onClick={() => fetchProductsByType("Ghee")}
-            className="px-4 py-2 bg-[#E7DBC4] rounded-lg flex items-center sm:w-auto"
-          >
-            <img
-              src="/assets/grass.png"
-              alt="Ghee"
-              className="w-10 h-10 rounded-full pr-1"
-            />
-            Ghee
-          </button>
         </div>
 
-        <CartItems
-          cartCount={cartCount}
-          updateCartCount={updateCartCount}
-          cartProductArray={filteredProducts}
-        />
+        <CartItems cartProductArray={filteredProducts} />
       </div>
     </div>
   );
